@@ -64,29 +64,85 @@ public sealed class FormEditarCategoria : Form
     }
 
     private async Task GuardarAsync()
+    
     {
-        if (string.IsNullOrWhiteSpace(_txtNombre.Text))
+        string nombre = _txtNombre.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(nombre))
         {
-            MessageBox.Show(this, "El nombre es obligatorio.", Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this,
+                "El nombre es obligatorio.",
+                Text,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+
+            _txtNombre.Focus();
             return;
+        }
+
+        if (nombre.Length < 3)
+        {
+            MessageBox.Show(this,
+                "El nombre debe tener mínimo 3 caracteres.",
+                Text,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+
+            _txtNombre.Focus();
+            return;
+        }
+
+        foreach (char c in nombre)
+        {
+            if (!char.IsLetter(c) && c != ' ')
+            {
+                MessageBox.Show(this,
+                    "El nombre solo puede contener letras.",
+                    Text,
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                _txtNombre.Focus();
+                return;
+            }
         }
 
         try
         {
             if (_idCategoria is null)
             {
-                int nuevoId = await _servicio.CrearAsync(_txtNombre.Text, _chkEstado.Checked).ConfigureAwait(true);
-                MessageBox.Show(this, $"Creado con Id {nuevoId}.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                int nuevoId = await _servicio
+                    .CrearAsync(nombre, _chkEstado.Checked)
+                    .ConfigureAwait(true);
+
+                MessageBox.Show(this,
+                    $"Creado con Id {nuevoId}.",
+                    Text,
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
             }
             else
             {
-                bool ok = await _servicio.ActualizarAsync(_idCategoria.Value, _txtNombre.Text, _chkEstado.Checked).ConfigureAwait(true);
+                bool ok = await _servicio
+                    .ActualizarAsync(_idCategoria.Value, nombre, _chkEstado.Checked)
+                    .ConfigureAwait(true);
+
                 if (!ok)
                 {
-                    MessageBox.Show(this, "No se pudo actualizar (no encontrado).", Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(this,
+                        "No se pudo actualizar.",
+                        Text,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+
                     return;
                 }
-                MessageBox.Show(this, "Actualizado.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                MessageBox.Show(this,
+                    "Actualizado correctamente.",
+                    Text,
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
             }
 
             DialogResult = DialogResult.OK;
@@ -94,7 +150,20 @@ public sealed class FormEditarCategoria : Form
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this,
+                ex.Message,
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+    }
+    private void TxtNombre_KeyPress(object? sender, KeyPressEventArgs e)
+    {
+        if (!char.IsLetter(e.KeyChar) &&
+            !char.IsControl(e.KeyChar) &&
+            e.KeyChar != ' ')
+        {
+            e.Handled = true;
         }
     }
 }
