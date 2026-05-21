@@ -49,6 +49,8 @@ public sealed class FormCategorias : Form
         _btnEditar = new Button { Text = "Editar", AutoSize = true };
         _btnEliminar = new Button { Text = "Eliminar", AutoSize = true };
         panel.Controls.AddRange(new Control[] { _btnRefrescar, _btnNuevo, _btnEditar, _btnEliminar });
+        _btnEditar.Enabled = false;
+        _btnEliminar.Enabled = false;
 
         Controls.Add(_rejilla);
         Controls.Add(panel);
@@ -56,6 +58,11 @@ public sealed class FormCategorias : Form
         _btnRefrescar.Click += async (_, _) => await CargarAsync().ConfigureAwait(true);
         _btnNuevo.Click += (_, _) => AbrirEditor(null);
         _btnEditar.Click += (_, _) =>
+        _rejilla.selectionChanged += (_, _) =>
+        bool haySeleccion = _rejilla.CurrenctRow is not null;
+        _btnEditar.Enabled = hayseleccion;
+        _btnEliminar.Enabled = hayseleccion;
+
         {
             int? id = ObtenerIdSeleccionado();
             if (id is null)
